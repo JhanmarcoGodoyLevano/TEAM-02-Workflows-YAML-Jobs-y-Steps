@@ -27,7 +27,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: build-output
-          path: build/
+          path: build/  # Asegúrate de que esta carpeta exista
 
   sonarcloud:
     needs: build
@@ -40,7 +40,7 @@ jobs:
 
       - uses: actions/download-artifact@v3
         with:
-          name: build-output
+          name: build-output  # Asegúrate de que el nombre coincida
 
       - name: SonarQube Cloud Scan
         uses: SonarSource/sonarcloud-github-action@master
