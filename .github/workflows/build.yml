@@ -1,20 +1,67 @@
-name: Build
+name: Build and Analyze with SonarCloud
+
 on:
   push:
     branches:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
+
 jobs:
-  sonarcloud:
-    name: SonarQube Cloud
+  build:
+    name: Build React App
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # Step 1: Clonar el repositorio
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step 2: Configurar Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+          node-version: '20'
+
+      # Step 3: Instalar dependencias
+      - name: Install Dependencies
+        run: npm install
+
+      # Step 4: Ejecutar build del proyecto
+      - name: Build Project
+        run: npm run build
+
+      # Step 5: Guardar artefactos para compartir con otros jobs
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-output
+          path: build/
+
+  sonarcloud:
+    name: SonarQube Cloud
+    needs: build  # Este job depende del job 'build'
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Descargar el código y artefactos del job anterior
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Para análisis más relevante
+
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: build-output
+
+      # Step 2: Configurar Node.js (necesario si se ejecutan scripts de análisis)
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      # Step 3: Ejecutar análisis en SonarCloud
       - name: SonarQube Cloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Necesario para información de PR
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_JHANMARCO }}
