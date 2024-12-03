@@ -24,7 +24,7 @@ jobs:
       - run: npm run build  # Ejecuta el build del proyecto
 
   sonarcloud:
-    needs: build  # Este job depende de la ejecución del job `build`
+    needs: build  # Este job depende de la ejecución del job `build` 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
